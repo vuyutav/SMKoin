@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".DetailActivity">
+
+    <!-- Gambar Produk -->
+    <ImageView
+        android:id="@+id/ivDetailGambar"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Tombol Kembali Melayang (Back Button) -->
+    <ImageView
+        android:id="@+id/ivBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/ic_launcher_background"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_revert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Harga Produk -->
+    <TextView
+        android:id="@+id/tvDetailHarga"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="500 Koin"
+        android:textColor="@color/colorAccent"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivDetailGambar" />
+
+    <!-- Nama Produk -->
+    <TextView
+        android:id="@+id/tvDetailNama"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="Nama Produk"
+        android:textColor="#333333"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDetailHarga" />
+
+    <!-- Deskripsi Produk -->
+    <TextView
+        android:id="@+id/tvDeskripsi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:lineSpacingExtra="4dp"
+        android:text="Deskripsi produk akan tampil di sini. Dapatkan produk ini dengan menukarkan koin yang Anda miliki dari hasil belanja di koperasi sekolah."
+        android:textColor="#757575"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvDetailNama" />
+
+    <!-- Tombol Beli / Tukar Koin (Melekat di bawah layar) -->
+    <Button
+        android:id="@+id/btnTukarKoin"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="Tukar Koin Sekarang"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
