@@ -10,6 +10,12 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Warna tambahan yang dipakai di layout kamu -->
-    <color name="colorPrimary">#FF6200EE</color>
-    <color name="colorAccent">#FF03DAC5</color>
+    <color name="colorPrimary">#B7EF28</color>
+    <color name="colorAccent">#79B900</color>
+    <color name="lime">#B7EF28</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="surface_soft">#F5F6F2</color>
+    <color name="text_primary">#171914</color>
+    <color name="text_secondary">#73766F</color>
+    <color name="stroke_soft">#E8EAE4</color>
 </resources>

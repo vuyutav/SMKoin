@@ -1,70 +1,40 @@
-package com.example.smkoin; // Pastikan package sesuai
+package com.example.smkoin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 public class DetailActivity extends AppCompatActivity {
-
-    private ImageView ivGambar, ivBack;
-    private TextView tvNama, tvHarga;
-    private Button btnTukarKoin;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-
-        // Sembunyikan Action Bar bawaan
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
-
-        // Hubungkan variabel dengan XML
-        ivGambar = findViewById(R.id.ivDetailGambar);
-        ivBack = findViewById(R.id.ivBack);
-        tvNama = findViewById(R.id.tvDetailNama);
-        tvHarga = findViewById(R.id.tvDetailHarga);
-        btnTukarKoin = findViewById(R.id.btnTukarKoin);
-
-        // Menangkap data (Intent) yang dikirim dari ProdukAdapter
-        String namaProduk = getIntent().getStringExtra("EXTRA_NAMA");
-        int hargaProduk = getIntent().getIntExtra("EXTRA_HARGA", 0);
-        int gambarProduk = getIntent().getIntExtra("EXTRA_GAMBAR", 0);
-
-        // Menampilkan data ke UI
-        tvNama.setText(namaProduk);
-        tvHarga.setText(hargaProduk + " Koin");
-        if (gambarProduk != 0) {
-            ivGambar.setImageResource(gambarProduk);
-        }
-
-        // Aksi Tombol Kembali (Back)
-        ivBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Menutup halaman detail dan kembali ke Home
-            }
-        });
-
-        btnTukarKoin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 1. Simpan kalimat riwayat ke dalam memori
-                String riwayatBaru = "Membeli " + namaProduk + " seharga " + hargaProduk + " Koin";
-                DataRiwayat.listRiwayat.add(riwayatBaru);
-
-                // 2. Tampilkan notifikasi
-                Toast.makeText(DetailActivity.this, "Berhasil menukar koin!", Toast.LENGTH_SHORT).show();
-
-                // 3. Kembali ke beranda secara otomatis
-                finish();
-            }
+        String name = getIntent().getStringExtra("EXTRA_NAMA");
+        int price = getIntent().getIntExtra("EXTRA_HARGA", 0);
+        int image = getIntent().getIntExtra("EXTRA_GAMBAR", 0);
+        String category = getIntent().getStringExtra("EXTRA_CATEGORY");
+        TextView title = findViewById(R.id.tvDetailNama);
+        TextView amount = findViewById(R.id.tvDetailHarga);
+        TextView description = findViewById(R.id.tvDeskripsi);
+        ImageView picture = findViewById(R.id.ivDetailGambar);
+        title.setText(name == null ? "Product" : name);
+        amount.setText(price + " pts");
+        description.setText("Preview catalog item" + (category == null ? "." : " in " + category + ".")
+                + " Product description, stock, and redemption rules are not available until the SMKoin catalog is connected.");
+        if (image != 0) picture.setImageResource(image);
+        findViewById(R.id.ivBack).setOnClickListener(v -> finish());
+        Button action = findViewById(R.id.btnTukarKoin);
+        action.setText("Review order");
+        action.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MyOrderActivity.class);
+            intent.putExtra("EXTRA_NAMA", name);
+            intent.putExtra("EXTRA_HARGA", price);
+            intent.putExtra("EXTRA_GAMBAR", image);
+            intent.putExtra("EXTRA_CATEGORY", category);
+            startActivity(intent);
         });
     }
 }

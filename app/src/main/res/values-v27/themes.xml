@@ -1,0 +1,15 @@
+<resources>
+    <style name="Theme.SMKoin" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/lime</item>
+        <item name="colorPrimaryVariant">@color/lime</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/surface_soft</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">@color/surface_soft</item>
+    </style>
+</resources>

@@ -7,14 +7,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukViewHolder> {
 
-    private List<Produk> listProduk;
+    private final List<Produk> listProduk = new ArrayList<>();
 
     public ProdukAdapter(List<Produk> listProduk) {
-        this.listProduk = listProduk;
+        this.listProduk.addAll(listProduk);
+    }
+
+    public void setProducts(List<Produk> products) {
+        listProduk.clear();
+        listProduk.addAll(products);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -29,8 +36,9 @@ public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukView
         Produk produk = listProduk.get(position);
 
         holder.tvNama.setText(produk.getNama());
-        holder.tvHarga.setText(produk.getHargaKoin() + " Koin");
+        holder.tvHarga.setText(produk.getHargaKoin() + " pts");
         holder.ivGambar.setImageResource(produk.getGambarResId());
+        holder.ivGambar.setContentDescription(produk.getNama() + " preview image");
 
         holder.itemView.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -42,6 +50,7 @@ public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukView
                 intent.putExtra("EXTRA_NAMA", produk.getNama());
                 intent.putExtra("EXTRA_HARGA", produk.getHargaKoin());
                 intent.putExtra("EXTRA_GAMBAR", produk.getGambarResId());
+                intent.putExtra("EXTRA_CATEGORY", produk.getCategory());
 
                 // Menjalankan perpindahan halaman
                 v.getContext().startActivity(intent);

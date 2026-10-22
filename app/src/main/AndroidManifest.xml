@@ -23,7 +23,7 @@
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.SMKoin">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,7 +34,12 @@
         <activity
             android:name=".DetailActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.SMKoin" />
+
+        <activity
+            android:name=".MyOrderActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SMKoin" />
 
     </application>
 
