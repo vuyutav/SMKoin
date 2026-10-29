@@ -11,9 +11,17 @@ import com.google.android.material.navigation.NavigationBarView;
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private int currentDestination = R.id.nav_home;
+    private boolean protectedUiReady;
+    private boolean resumeSessionCheck;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AuthGate.requireSession(this, () -> showMainUi(savedInstanceState));
+    }
+
+    private void showMainUi(Bundle savedInstanceState) {
+        if (isFinishing()) return;
+        protectedUiReady = true;
         setContentView(R.layout.activity_main);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (savedInstanceState != null) currentDestination = savedInstanceState.getInt("destination", R.id.nav_home);
@@ -24,6 +32,17 @@ public class MainActivity extends AppCompatActivity {
                 showDestination(item.getItemId(), false);
                 return true;
             }
+        });
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (!protectedUiReady || resumeSessionCheck) return;
+        resumeSessionCheck = true;
+        SupabaseRepository.get(this).validateSession((valid, error) -> {
+            if (isFinishing()) return;
+            resumeSessionCheck = false;
+            if (error != null || !Boolean.TRUE.equals(valid)) AuthGate.redirect(this, error);
         });
     }
 

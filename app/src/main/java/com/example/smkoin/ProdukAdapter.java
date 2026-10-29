@@ -37,8 +37,9 @@ public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukView
 
         holder.tvNama.setText(produk.getNama());
         holder.tvHarga.setText(produk.getHargaKoin() + " pts");
-        holder.ivGambar.setImageResource(produk.getGambarResId());
+        ProductImageLoader.load(holder.ivGambar, produk.getImageUrl(), produk.getGambarResId() == 0 ? R.drawable.img : produk.getGambarResId());
         holder.ivGambar.setContentDescription(produk.getNama() + " preview image");
+        holder.tvStock.setText(produk.getId().isEmpty() ? "Preview item" : (produk.getStockQuantity() > 0 ? "Available: " + produk.getStockQuantity() : "Out of stock"));
 
         holder.itemView.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -51,6 +52,11 @@ public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukView
                 intent.putExtra("EXTRA_HARGA", produk.getHargaKoin());
                 intent.putExtra("EXTRA_GAMBAR", produk.getGambarResId());
                 intent.putExtra("EXTRA_CATEGORY", produk.getCategory());
+                intent.putExtra("EXTRA_ID", produk.getId());
+                intent.putExtra("EXTRA_DESCRIPTION", produk.getDescription());
+                intent.putExtra("EXTRA_IMAGE_URL", produk.getImageUrl());
+                intent.putExtra("EXTRA_WEIGHT", produk.getWeightLabel());
+                intent.putExtra("EXTRA_STOCK", produk.getStockQuantity());
 
                 // Menjalankan perpindahan halaman
                 v.getContext().startActivity(intent);
@@ -65,13 +71,14 @@ public class ProdukAdapter extends RecyclerView.Adapter<ProdukAdapter.ProdukView
     }
 
     public static class ProdukViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNama, tvHarga;
+        TextView tvNama, tvHarga, tvStock;
         ImageView ivGambar;
 
         public ProdukViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNama = itemView.findViewById(R.id.tvNamaProduk);
             tvHarga = itemView.findViewById(R.id.tvHargaKoin);
+            tvStock = itemView.findViewById(R.id.tvStock);
             ivGambar = itemView.findViewById(R.id.ivGambarProduk);
         }
     }

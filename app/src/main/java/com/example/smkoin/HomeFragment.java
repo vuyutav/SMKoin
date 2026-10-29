@@ -15,6 +15,14 @@ import androidx.fragment.app.Fragment;
 
 public class HomeFragment extends Fragment {
     private boolean balanceHidden;
+    private final PointBalancePresenter balancePresenter = new PointBalancePresenter();
+    private TextView balanceValue;
+    private TextView balanceStatus;
+    private TextView greeting;
+    private TextView offerTitle;
+    private TextView offerDescription;
+    private android.widget.ImageView offerImage;
+    private ProgressBar balanceLoading;
 
     @Nullable @Override public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle state) {
         ScrollView scroll = new ScrollView(requireContext());
@@ -26,7 +34,8 @@ public class HomeFragment extends Fragment {
 
         LinearLayout header = AppUi.row(requireContext());
         LinearLayout titleBlock = AppUi.column(requireContext());
-        titleBlock.addView(AppUi.text(requireContext(), "Good morning", 22, true, AppUi.INK));
+        greeting = AppUi.text(requireContext(), "Welcome to SMKoin", 22, true, AppUi.INK);
+        titleBlock.addView(greeting);
         titleBlock.addView(AppUi.text(requireContext(), "Welcome to SMKoin", 14, false, AppUi.MUTED));
         header.addView(titleBlock, new LinearLayout.LayoutParams(0, -2, 1));
         TextView notification = AppUi.text(requireContext(), "♧", 24, true, AppUi.INK);
@@ -39,23 +48,27 @@ public class HomeFragment extends Fragment {
         LinearLayout row = AppUi.row(requireContext());
         LinearLayout amounts = AppUi.column(requireContext());
         amounts.addView(AppUi.text(requireContext(), "Your Point Balance", 14, true, AppUi.MUTED));
-        TextView value = AppUi.text(requireContext(), "Unavailable", 28, true, AppUi.INK);
-        amounts.addView(value);
+        balanceValue = AppUi.text(requireContext(), "Loading…", 28, true, AppUi.INK);
+        amounts.addView(balanceValue);
         row.addView(amounts, new LinearLayout.LayoutParams(0, -2, 1));
+        balanceLoading = new ProgressBar(requireContext());
+        balanceLoading.setVisibility(View.GONE);
+        LinearLayout.LayoutParams loadingParams = new LinearLayout.LayoutParams(
+                AppUi.dp(requireContext(), 22), AppUi.dp(requireContext(), 22));
+        loadingParams.rightMargin = AppUi.dp(requireContext(), 10);
+        row.addView(balanceLoading, loadingParams);
         TextView visibility = AppUi.text(requireContext(), "◉", 22, true, AppUi.MUTED);
         visibility.setContentDescription("Toggle point balance visibility");
         row.addView(visibility);
-        visibility.setOnClickListener(v -> { balanceHidden = !balanceHidden; value.setText(balanceHidden ? "••••" : "Unavailable"); });
+        visibility.setOnClickListener(v -> { balanceHidden = !balanceHidden; renderBalance(); });
         balance.addView(row);
         AppUi.space(requireContext(), balance, 10);
-        balance.addView(AppUi.text(requireContext(), "Connect an account to view your points.", 13, false, AppUi.MUTED));
-        ProgressBar progress = new ProgressBar(requireContext(), null, android.R.attr.progressBarStyleHorizontal);
-        progress.setProgress(0);
-        progress.setMax(100);
-        progress.setProgressTintList(android.content.res.ColorStateList.valueOf(AppUi.LIME));
-        LinearLayout.LayoutParams progressParams = new LinearLayout.LayoutParams(-1, AppUi.dp(requireContext(), 6));
-        progressParams.topMargin = AppUi.dp(requireContext(), 12);
-        balance.addView(progress, progressParams);
+        balanceStatus = AppUi.text(requireContext(), "Loading your point balance…", 13, false, AppUi.MUTED);
+        balanceStatus.setContentDescription("Point balance status");
+        balance.addView(balanceStatus);
+        balanceStatus.setOnClickListener(v -> {
+            if (balancePresenter.state().status == PointBalancePresenter.Status.ERROR) refreshBalance();
+        });
         page.addView(balance);
 
         AppUi.space(requireContext(), page, 22);
@@ -77,21 +90,111 @@ public class HomeFragment extends Fragment {
         AppUi.space(requireContext(), page, 22);
         LinearLayout offersTitle = AppUi.row(requireContext());
         offersTitle.addView(AppUi.text(requireContext(), "Special Offers", 18, true, AppUi.INK), new LinearLayout.LayoutParams(0, -2, 1));
-        offersTitle.addView(AppUi.text(requireContext(), "Preview", 12, true, AppUi.MUTED));
+        offersTitle.addView(AppUi.text(requireContext(), "Featured", 12, true, AppUi.MUTED));
         page.addView(offersTitle);
         AppUi.space(requireContext(), page, 10);
         LinearLayout offer = AppUi.card(requireContext());
         offer.setGravity(Gravity.CENTER);
-        android.widget.ImageView image = new android.widget.ImageView(requireContext());
-        image.setImageResource(R.drawable.img);
-        image.setContentDescription("SMKoin rewards illustration");
-        image.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-        offer.addView(image, new LinearLayout.LayoutParams(-1, AppUi.dp(requireContext(), 130)));
-        offer.addView(AppUi.text(requireContext(), "Explore Point Shop", 18, true, AppUi.INK));
-        offer.addView(AppUi.text(requireContext(), "Sample catalog · purchases unavailable", 13, false, AppUi.MUTED));
+        offerImage = new android.widget.ImageView(requireContext());
+        offerImage.setImageResource(R.drawable.img);
+        offerImage.setContentDescription("Special offer");
+        offerImage.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        offer.addView(offerImage, new LinearLayout.LayoutParams(-1, AppUi.dp(requireContext(), 130)));
+        offerTitle = AppUi.text(requireContext(), "Explore Point Shop", 18, true, AppUi.INK);
+        offerDescription = AppUi.text(requireContext(), "Connect to see current offers.", 13, false, AppUi.MUTED);
+        offer.addView(offerTitle);
+        offer.addView(offerDescription);
         offer.setOnClickListener(v -> ((MainActivity) requireActivity()).openTab(R.id.nav_shop));
         page.addView(offer);
+        loadAccountData();
         return scroll;
+    }
+
+    @Override public void onResume() {
+        super.onResume();
+        refreshBalance();
+    }
+
+    private void loadAccountData() {
+        SupabaseRepository repository = SupabaseRepository.get(requireContext());
+        if (!repository.isConfigured()) {
+            offerDescription.setText("Preview mode · no live offers or account data configured.");
+            return;
+        }
+        if (repository.hasSession()) {
+            repository.loadProfile((profile, error) -> {
+                if (isAdded() && error == null && profile != null && !profile.fullName.trim().isEmpty()) {
+                    greeting.setText("Hello, " + profile.fullName.trim());
+                }
+            });
+        }
+        repository.loadOffers((offers, error) -> {
+            if (!isAdded()) return;
+            if (error != null) offerDescription.setText("Offers could not be loaded.");
+            else if (offers.isEmpty()) offerDescription.setText("There are no current offers.");
+            else {
+                Offer current = offers.get(0);
+                offerTitle.setText(current.title);
+                offerDescription.setText(current.description.isEmpty() ? "See this offer in the Point Shop." : current.description);
+                ProductImageLoader.load(offerImage, current.imageUrl, R.drawable.img);
+            }
+        });
+    }
+
+    private void refreshBalance() {
+        if (!isAdded() || balanceValue == null || balanceStatus == null) return;
+        SupabaseRepository repository = SupabaseRepository.get(requireContext());
+        if (!repository.isConfigured()) {
+            balancePresenter.setError("Supabase is not configured.");
+            renderBalance();
+            return;
+        }
+        PointBalancePresenter.Request request = balancePresenter.begin(repository.currentUserId());
+        renderBalance();
+        if (request == null) return;
+        repository.loadBalance((balance, error) -> {
+            if (!isAdded() || balanceValue == null || balanceStatus == null) return;
+            balancePresenter.complete(request, balance, error);
+            renderBalance();
+        });
+    }
+
+    private void renderBalance() {
+        if (balanceValue == null || balanceStatus == null || balanceLoading == null) return;
+        PointBalancePresenter.State state = balancePresenter.state();
+        balanceLoading.setVisibility(state.status == PointBalancePresenter.Status.LOADING ? View.VISIBLE : View.GONE);
+        switch (state.status) {
+            case AVAILABLE:
+                balanceValue.setText(balanceHidden ? "••••"
+                        : String.format(java.util.Locale.getDefault(), "%,d pts", state.balance));
+                balanceValue.setContentDescription(balanceHidden ? "Point balance hidden" : "Point balance");
+                break;
+            case LOADING:
+                balanceValue.setText("Loading…");
+                balanceValue.setContentDescription("Loading point balance");
+                break;
+            case SIGN_IN_REQUIRED:
+                balanceValue.setText("Sign in required");
+                balanceValue.setContentDescription("Sign in to view your point balance");
+                break;
+            case ERROR:
+            default:
+                balanceValue.setText("Unavailable");
+                balanceValue.setContentDescription("Point balance unavailable");
+                break;
+        }
+        balanceStatus.setText(state.message);
+        boolean canRetry = state.status == PointBalancePresenter.Status.ERROR;
+        balanceStatus.setClickable(canRetry);
+        balanceStatus.setFocusable(canRetry);
+        balanceStatus.setContentDescription(canRetry ? state.message + " Tap to retry." : "Point balance status");
+    }
+
+    @Override public void onDestroyView() {
+        balanceValue = null;
+        balanceStatus = null;
+        balanceLoading = null;
+        super.onDestroyView();
     }
 
     private TextView actionTile(String icon, String label) {
